@@ -10,6 +10,7 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from app.forms import LoginForm
 from app.models import UserProfile
+from werkzeug.security import check_password_hash
 
 
 ###
@@ -30,8 +31,11 @@ def about():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('secure_page'))
+
     form = LoginForm()
-    if request.method == "POST":
+    if request.method == "POST" and form.validate_on_submit():
         # change this to actually validate the entire form submission
         # and not just one field
         if form.username.data:
@@ -44,10 +48,29 @@ def login():
             # passed to the login_user() method below.
 
             # get user id, load into session
-            login_user(user)
+            username = form.username.data
+            password = form.password.data 
+
+            #not sure if i prefer this version yet
+            #user = UserProfile.query.filter_by(username=username, password=password).first()
+
+            user = UserProfile.query.filter_by(username=username).first()
+
+            if user is not None and check_password_hash(user.password, password):
+                remember_me= False
+
+                if 'remember_me' in request.form:
+                    remember_me= True
+                    
+                
+                login_user(user, remember_me)
+
+                flash('You Have Been Logged In Successfully!')
 
             # remember to flash a message to the user
-            return redirect(url_for("home"))  # they should be redirected to a secure-page route instead
+            return redirect(url_for("secure_page"))  # they should be redirected to a secure-page route instead
+        else:
+            flash('Username or Password Incorrect! + "\n" Please Try Again.')
     return render_template("login.html", form=form)
 
 
@@ -56,6 +79,12 @@ def login():
 @login_manager.user_loader
 def load_user(id):
     return UserProfile.query.get(int(id))
+
+#secure_page route
+@app.route('/secure_page')
+def secure_page():
+    return render_template("secure_page.html")
+
 
 ###
 # The functions below should be applicable to all Flask apps.
