@@ -83,10 +83,17 @@ def load_user(id):
     return UserProfile.query.get(int(id))
 
 #secure_page route
-@login_required
 @app.route('/secure_page')
+@login_required
 def secure_page():
     return render_template("secure_page.html")
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You Have Been Successfully LOgged Out!')
+    return redirect(url_for('home'))
 
 
 ###
