@@ -71,6 +71,8 @@ def login():
             return redirect(url_for("secure_page"))  # they should be redirected to a secure-page route instead
         else:
             flash('Username or Password Incorrect! + "\n" Please Try Again.')
+
+    page_not_found(form)
     return render_template("login.html", form=form)
 
 
@@ -81,6 +83,7 @@ def load_user(id):
     return UserProfile.query.get(int(id))
 
 #secure_page route
+@login_required
 @app.route('/secure_page')
 def secure_page():
     return render_template("secure_page.html")
