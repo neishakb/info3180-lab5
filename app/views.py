@@ -92,7 +92,7 @@ def secure_page():
 @login_required
 def logout():
     logout_user()
-    flash('You Have Been Successfully LOgged Out!')
+    flash('You Have Been Successfully Logged Out!')
     return redirect(url_for('home'))
 
 
